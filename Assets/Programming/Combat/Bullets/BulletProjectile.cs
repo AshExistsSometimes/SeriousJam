@@ -1,69 +1,65 @@
 using UnityEngine;
 
-/// <summary>
-/// Handles bullet movement and collision.
-/// Applies BulletSO effects on hit.
-/// </summary>
 public class BulletProjectile : MonoBehaviour
 {
-    private BulletSO data;
-    private Vector3 direction;
-    private float timer;
-    private bool initialized;
 
-    [SerializeField] private LayerMask hitMask;
+    [SerializeField] private BulletSO data;
+    [SerializeField] private Vector3 direction;
+    [SerializeField] private float timer;
+    [SerializeField] private bool initialized;
+    public float myDamage = 0f;
 
-    public void Initialize(BulletSO bulletData, Vector3 dir)
+    private LayerMask hitMask;
+
+    public void Initialize(BulletSO bulletData, Vector3 dir, LayerMask mask)
     {
         data = bulletData;
         direction = dir.normalized;
+        hitMask = mask;
         initialized = true;
+
+        myDamage = data.damage;
 
         if (data == null)
         {
-            Debug.LogError("BulletProjectile initialized with NULL BulletSO!");
+            Debug.LogError("BulletProjectile initialized with null BulletSO!");
             return;
         }
 
         foreach (var effect in data.effects)
-        {
             effect.OnSpawn(this);
-        }
     }
 
     private void Update()
     {
-        if (!initialized || data == null)
-            return;
+        if (!initialized || data == null) return;
 
         transform.position += direction * data.speed * Time.deltaTime;
 
         timer += Time.deltaTime;
-
         if (timer >= data.lifetime)
             Destroy(gameObject);
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!initialized || data == null)
-            return;
+        if (!initialized || data == null) return;
 
-        // ignore non-hit objects
-        if (!other.CompareTag("Enemy") && !other.CompareTag("Wall"))
-            return;
-
-        foreach (var effect in data.effects)
+        IDamageable damageable = other.GetComponent<IDamageable>();
+        if (damageable != null && other.GetComponent<PlayerHealth>() == null)
         {
-            effect.OnHit(other.gameObject, transform.position, direction);
+            foreach (var effect in data.effects)
+                effect.OnHit(other.gameObject, transform.position, direction);
+
+            damageable.TakeDamage(data.damage);
+            Destroy(gameObject);
+            return;
         }
 
-        DestroySelf();
-    }
-
-
-    private void DestroySelf()
-    {
-        Destroy(gameObject);
+        // Check wall by layer instead of tag
+        if (((1 << other.gameObject.layer) & hitMask) != 0)
+        {
+            Destroy(gameObject);
+        }
     }
 }

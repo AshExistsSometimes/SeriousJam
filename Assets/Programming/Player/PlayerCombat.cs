@@ -10,7 +10,7 @@ public class PlayerCombat : MonoBehaviour
     public Camera cam;
     public RevolverUI revolverUI;
     public PlayerModelSpin modelSpin;
-    public PlayerMovement playerMovement;   // Drag root PlayerMovement here
+    public PlayerMovement playerMovement;
 
     [Header("Aim")]
     public float aimPlaneHeight = 0f;
@@ -25,11 +25,27 @@ public class PlayerCombat : MonoBehaviour
 
     [Header("Spin Dash")]
     public float spinDashCooldown = 1f;
+    [Tooltip("Radius around player that damages enemies during dash")]
+    public float dashAttackRadius = 1.5f;
+    [Tooltip("Damage dealt to each enemy hit during dash")]
+    public float dashDamage = 25f;
+    [Tooltip("Speed enemies are knocked away from the player")]
+    public float dashKnockbackSpeed = 12f;
+    [Tooltip("Layer mask for enemies so the overlap sphere only hits them")]
+    public LayerMask enemyLayer;
+
+    [Header("Bullet LayerMask")]
+    [Tooltip("Set to Enemy + Wall layers so bullets collide correctly")]
+    public LayerMask bulletHitMask;
 
     private float fireCooldown;
     private float dashCooldownTimer;
     private bool isReloading;
     private bool isSpinDashing;
+
+    // Tracks which enemies have already been hit this dash so we don't
+    // damage the same enemy multiple times per dash
+    private HashSet<BaseEnemy> hitThisDash = new();
 
     private void Start()
     {
@@ -42,6 +58,9 @@ public class PlayerCombat : MonoBehaviour
         HandleInput();
         fireCooldown -= Time.deltaTime;
         dashCooldownTimer -= Time.deltaTime;
+
+        if (isSpinDashing)
+            CheckDashHits();
     }
 
     // ?? AIM ???????????????????????????????????????????????????????????????????
@@ -105,23 +124,45 @@ public class PlayerCombat : MonoBehaviour
     {
         isSpinDashing = true;
         dashCooldownTimer = spinDashCooldown;
+        hitThisDash.Clear();
 
-        // Snapshot aim direction before anything moves
         Vector3 dashDir = transform.forward;
         dashDir.y = 0f;
         dashDir.Normalize();
 
-        // Trigger model spin and player dash simultaneously
         modelSpin?.TriggerSpin();
         playerMovement?.StartDash(dashDir);
 
-        // Wait for spin to finish before releasing the lock
         if (modelSpin != null)
             yield return modelSpin.WaitForSpin();
         else
-            yield return new WaitForSeconds(0.6f); // fallback if no model assigned
+            yield return new WaitForSeconds(0.6f);
 
         isSpinDashing = false;
+        hitThisDash.Clear();
+    }
+
+    // Runs every frame while dashing — hits any enemy inside dashAttackRadius
+    private void CheckDashHits()
+    {
+        Collider[] hits = Physics.OverlapSphere(transform.position, dashAttackRadius, enemyLayer);
+
+        foreach (Collider col in hits)
+        {
+            BaseEnemy enemy = col.GetComponent<BaseEnemy>();
+            if (enemy == null || hitThisDash.Contains(enemy)) continue;
+
+            hitThisDash.Add(enemy);
+
+            // Damage
+            enemy.TakeDamage(dashDamage);
+
+            // Knockback away from player
+            Vector3 knockDir = (col.transform.position - transform.position);
+            knockDir.y = 0f;
+            knockDir.Normalize();
+            enemy.ApplyKnockback(knockDir, dashKnockbackSpeed);
+        }
     }
 
     // ?? RELOAD ????????????????????????????????????????????????????????????????
@@ -172,6 +213,14 @@ public class PlayerCombat : MonoBehaviour
             firePoint.position,
             Quaternion.LookRotation(dir));
 
-        obj.GetComponent<BulletProjectile>()?.Initialize(bullet, dir);
+        obj.GetComponent<BulletProjectile>()?.Initialize(bullet, dir, bulletHitMask);
+    }
+
+    // ?? GIZMOS ????????????????????????????????????????????????????????????????
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = new Color(1f, 0.3f, 0f, 0.4f);
+        Gizmos.DrawWireSphere(transform.position, dashAttackRadius);
     }
 }

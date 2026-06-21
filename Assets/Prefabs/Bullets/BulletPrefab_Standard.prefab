@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 8151011351391412763}
   - component: {fileID: 7872506544751586257}
   - component: {fileID: 8928573336105915192}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: BulletPrefab_Standard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -146,6 +146,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c32d97565e428f44397cd7b17d88176b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hitMask:
-    serializedVersion: 2
-    m_Bits: 384
+  data: {fileID: 0}
+  direction: {x: 0, y: 0, z: 0}
+  timer: 0
+  initialized: 0
+  myDamage: 0

@@ -19,4 +19,4 @@ MonoBehaviour:
   speed: 20
   lifetime: 6
   effects:
-  - {fileID: 0}
+  - {fileID: 11400000, guid: aad6b137976510c44bd3da3183ee421d, type: 2}

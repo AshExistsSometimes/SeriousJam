@@ -1,6 +1,7 @@
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
+using Unity.AI.Navigation;
+using System.Collections;
 
 public class LevelManager : MonoBehaviour
 {
@@ -28,6 +29,9 @@ public class LevelManager : MonoBehaviour
      * - Red: boss
      * - White: normal rooms
      */
+
+    [Header("NavMesh")]
+    public NavMeshSurface navMeshSurface;
 
     [Header("Grid")]
     public float roomScale = 35f;
@@ -426,6 +430,15 @@ public class LevelManager : MonoBehaviour
         yield return null; // ensures all transforms are valid
 
         GenerateWalls();
+
+        if (navMeshSurface != null)
+        {
+            navMeshSurface.BuildNavMesh();
+        }
+        else
+        {
+            Debug.LogWarning("[LevelManager] No NavMeshSurface assigned — skipping NavMesh bake.");
+        }
     }
 
     public Vector3 GridToWorldPosition(Vector2Int pos)
