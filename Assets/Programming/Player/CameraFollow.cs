@@ -13,6 +13,8 @@ public class CameraFollow : MonoBehaviour
     [Header("Base Offset")]
     public Vector3 baseOffset = new Vector3(0f, 15f, -8f);
 
+    public float RotationAngle = 60f;
+
     [Header("Mouse Look-Ahead")]
     public float lookAheadStrength = 3f;
     public float maxLookAhead = 3f;
@@ -37,7 +39,7 @@ public class CameraFollow : MonoBehaviour
         );
 
         // IMPORTANT: no rotation tracking, fixed angle only
-        transform.rotation = Quaternion.Euler(60f, 0f, 0f);
+        transform.rotation = Quaternion.Euler(RotationAngle, 0f, 0f);
     }
 
     /// <summary>

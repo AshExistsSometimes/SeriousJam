@@ -55,7 +55,7 @@ public class LevelManager : MonoBehaviour
     private Dictionary<Vector2Int, GameObject> spawnedRooms =
     new Dictionary<Vector2Int, GameObject>();
 
-    private List<RoomNode> mainPath =
+    public List<RoomNode> mainPath =
         new List<RoomNode>();
 
     private RoomNode startNode;
@@ -64,6 +64,8 @@ public class LevelManager : MonoBehaviour
     public List<RoomPrefabEntry> RoomPrefabs;
 
     public GameObject DoorFillerPrefab;
+
+    public List<RoomNode> MainPath => mainPath;
 
     private static readonly Vector2Int[] Directions =
     {
@@ -94,13 +96,17 @@ public class LevelManager : MonoBehaviour
 
     private void LoadLevel(int currentLevelNumber)
     {
+        int calculationResult = Mathf.FloorToInt(currentLevelNumber * (currentLevelNumber / 2) + 3);
+
         MapLength = Mathf.Min(
-            currentLevelNumber * currentLevelNumber + 3,
+            calculationResult,
             MapLengthCap);
 
         GenerateGraph();
         SpawnRooms();
         StartCoroutine(GenerateWallsNextFrame());
+
+        FindFirstObjectByType<MinimapPathRenderer>()?.BuildPath();
     }
 
     private void GenerateGraph()
@@ -353,7 +359,7 @@ public class LevelManager : MonoBehaviour
 
         Debug.Log($"[WALL] Placing wall at {pos} dir {dir}");
 
-        Instantiate(DoorFillerPrefab, anchor.position, anchor.rotation, anchor);
+        Instantiate(DoorFillerPrefab, anchor.position, anchor.rotation);
     }
 
     private Transform GetDoorAnchor(Room room, Vector2Int dir)
@@ -420,6 +426,11 @@ public class LevelManager : MonoBehaviour
         yield return null; // ensures all transforms are valid
 
         GenerateWalls();
+    }
+
+    public Vector3 GridToWorldPosition(Vector2Int pos)
+    {
+        return GridToWorld(pos);
     }
 
     // ---------------- GIZMOS ----------------
@@ -495,7 +506,7 @@ public class LevelManager : MonoBehaviour
         }
     }
 
-    private Vector3 GridToWorld(Vector2Int pos)
+    public Vector3 GridToWorld(Vector2Int pos)
     {
         return new Vector3(pos.x * roomScale, 0f, pos.y * roomScale);
     }
