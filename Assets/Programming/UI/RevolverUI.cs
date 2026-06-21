@@ -111,4 +111,14 @@ public class RevolverUI : MonoBehaviour
         drum.localRotation = Quaternion.Euler(0f, 0f, accumulatedRotation);
         isAnimating = false;
     }
+
+    /// <summary>Immediately cancels any queued rotation and resets animation state.</summary>
+    public void CancelAnimations()
+    {
+        StopAllCoroutines();
+        isAnimating = false;
+        accumulatedRotation = 0f;
+        drum.localRotation = Quaternion.identity;
+        activeSlotIndex = 0;
+    }
 }
