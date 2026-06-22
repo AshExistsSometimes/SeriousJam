@@ -3,13 +3,20 @@ using UnityEngine;
 public class BulletProjectile : MonoBehaviour
 {
 
-    [SerializeField] private BulletSO data;
-    [SerializeField] private Vector3 direction;
-    [SerializeField] private float timer;
-    [SerializeField] private bool initialized;
+    private BulletSO data;
+    private Vector3 direction;
+    private float timer;
+    private bool initialized;
     public float myDamage = 0f;
 
     private LayerMask hitMask;
+
+    private Rigidbody rb;
+
+    private void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
 
     public void Initialize(BulletSO bulletData, Vector3 dir, LayerMask mask)
     {
@@ -34,7 +41,20 @@ public class BulletProjectile : MonoBehaviour
     {
         if (!initialized || data == null) return;
 
-        transform.position += direction * data.speed * Time.deltaTime;
+        Vector3 nextPos = transform.position + direction * data.speed * Time.deltaTime;
+
+        Debug.Log($"Dir:{direction} Speed:{data.speed}");
+
+        if (rb != null)
+        {
+            rb.MovePosition(nextPos);
+        }
+        else
+        {
+            transform.position = nextPos;
+        }
+
+        Debug.Log($"Bullet Pos: {transform.position}");
 
         timer += Time.deltaTime;
         if (timer >= data.lifetime)
