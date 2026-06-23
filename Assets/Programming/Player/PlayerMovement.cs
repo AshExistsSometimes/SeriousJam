@@ -22,6 +22,12 @@ public class PlayerMovement : MonoBehaviour
     [Header("References")]
     public CameraFollow cameraFollow;
 
+
+    [SerializeField] private AudioSource audioSource;
+    [Space]
+    [SerializeField] private AudioClip DashSFX;
+    public Vector2 DashPitchVariation = new Vector2(0.95f, 1.05f);
+
     private CharacterController controller;
     private Vector3 currentVelocity;
 
@@ -77,6 +83,9 @@ public class PlayerMovement : MonoBehaviour
     public void StartDash(Vector3 dir)
     {
         if (isDashing) return;
+
+        audioSource.pitch = Random.Range(DashPitchVariation.x, DashPitchVariation.y);
+        audioSource.PlayOneShot(DashSFX);
 
         dashDir = dir;
         dashElapsed = 0f;

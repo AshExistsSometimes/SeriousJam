@@ -17,6 +17,14 @@ public class BaseEnemy : MonoBehaviour, IDamageable
     [Header("Knockback")]
     public float knockbackRecoverySpeed = 8f;
 
+    public AudioSource audioSource;
+    [Space]
+    [SerializeField] private AudioClip HurtSFX;
+    public Vector2 HurtPitchVariation = new Vector2(0.95f, 1.05f);
+    [Space]
+    public AudioClip AttackSFX;
+    public Vector2 AttackPitchVariation = new Vector2(0.95f, 1.05f);
+
     public bool TargetingPlayer { get; protected set; }
     protected Transform player;
     protected Vector3 lastKnownPlayerPos;
@@ -36,6 +44,8 @@ public class BaseEnemy : MonoBehaviour, IDamageable
         agent.speed = moveSpeed;
         agent.updateRotation = false;
         currentHP = maxHP;
+
+        audioSource = FindFirstObjectByType<AudioSource>();
 
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
@@ -131,6 +141,10 @@ public class BaseEnemy : MonoBehaviour, IDamageable
     {
         if (isDead) return;
         currentHP -= damage;
+
+        audioSource.pitch = Random.Range(HurtPitchVariation.x, HurtPitchVariation.y);
+        audioSource.PlayOneShot(HurtSFX);
+
         if (currentHP <= 0f) Die();
     }
 

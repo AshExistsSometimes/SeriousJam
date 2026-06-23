@@ -20,6 +20,7 @@ public class EnemySpawner : MonoBehaviour
     [Header("Enemy Count Weighting")]
     [Range(0f, 1f)]
     public float levelWeighting = 0.4f;
+    public int MinimumEnemiesToSpawn = 2;
 
     private bool hasTriggered;
     private bool isActive;
@@ -108,7 +109,7 @@ public class EnemySpawner : MonoBehaviour
 
     private int RollEnemyCount(int level)
     {
-        int min = 1;
+        int min = MinimumEnemiesToSpawn;
         int max = level * 2;
 
         List<int> pool = new();

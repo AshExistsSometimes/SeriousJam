@@ -16,12 +16,23 @@ public class PlayerHealth : MonoBehaviour, IDamageable
     [Header("References")]
     public PlayerCombat playerCombat;
     public PlayerMovement playerMovement;
+    public Slider PlayerHealthSlider;
+
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [Space]
+    [SerializeField] private AudioClip HealSFX;
+    public Vector2 HealPitchVariation = new Vector2(0.95f, 1.05f);
+    [Space]
+    [SerializeField] private AudioClip DamageSFX;
+    public Vector2 DamagePitchVariation = new Vector2(0.95f, 1.05f);
 
     private bool isDead;
 
     private void Awake()
     {
         currentHP = maxHP;
+        UpdateHealthSlider();
 
         if (deathFadeImage != null)
         {
@@ -38,6 +49,11 @@ public class PlayerHealth : MonoBehaviour, IDamageable
 
         currentHP = Mathf.Max(0f, currentHP - damage);
 
+        audioSource.pitch = Random.Range(DamagePitchVariation.x, DamagePitchVariation.y);
+        audioSource.PlayOneShot(DamageSFX);
+
+        UpdateHealthSlider();
+
         if (currentHP <= 0f)
             Die();
     }
@@ -46,6 +62,11 @@ public class PlayerHealth : MonoBehaviour, IDamageable
     {
         if (isDead) return;
         currentHP = Mathf.Min(maxHP, currentHP + amount);
+
+        audioSource.pitch = Random.Range(HealPitchVariation.x, HealPitchVariation.y);
+        audioSource.PlayOneShot(HealSFX);
+
+        UpdateHealthSlider();
     }
 
     public void Die()
@@ -74,5 +95,11 @@ public class PlayerHealth : MonoBehaviour, IDamageable
             deathFadeImage.color = c;
             yield return null;
         }
+    }
+
+    public void UpdateHealthSlider()
+    {
+        PlayerHealthSlider.maxValue = maxHP;
+        PlayerHealthSlider.value = currentHP;
     }
 }

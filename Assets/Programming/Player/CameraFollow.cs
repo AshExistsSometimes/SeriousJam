@@ -7,6 +7,8 @@ using UnityEngine;
 /// </summary>
 public class CameraFollow : MonoBehaviour
 {
+    public bool externalControl = false;
+
     [Header("Target")]
     public Transform player;
 
@@ -24,12 +26,10 @@ public class CameraFollow : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (player == null) return;
+        if (player == null || externalControl) return;
 
         Vector3 targetPos = player.position + baseOffset;
-
         Vector3 mouseOffset = CalculateMouseOffset();
-
         targetPos += mouseOffset;
 
         transform.position = Vector3.Lerp(
@@ -38,7 +38,6 @@ public class CameraFollow : MonoBehaviour
             smoothSpeed * Time.deltaTime
         );
 
-        // IMPORTANT: no rotation tracking, fixed angle only
         transform.rotation = Quaternion.Euler(RotationAngle, 0f, 0f);
     }
 

@@ -81,8 +81,12 @@ public class RangedEnemy : BaseEnemy
     {
         if (projectilePrefab == null || player == null) return;
 
+        audioSource.pitch = Random.Range(AttackPitchVariation.x, AttackPitchVariation.y);
+        audioSource.PlayOneShot(AttackSFX);
+
         Vector3 origin = transform.position + Vector3.up * 0.5f;
         Vector3 dir = (player.position + Vector3.up * 0.5f - origin).normalized;
+
 
         GameObject proj = Instantiate(
             projectilePrefab,

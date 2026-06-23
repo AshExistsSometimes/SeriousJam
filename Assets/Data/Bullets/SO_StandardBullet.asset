@@ -15,8 +15,9 @@ MonoBehaviour:
   bulletName: Bullet
   icon: {fileID: 21300000, guid: 36d1bf338af77154aa54db67d009f222, type: 3}
   bulletPrefab: {fileID: 5008046845060285744, guid: 43bc4d9c918e3234ca75097a7ba36b42, type: 3}
-  damage: 5
-  speed: 20
+  damage: 10
+  speed: 15
   lifetime: 6
+  BulletSFX: {fileID: 8300000, guid: d78525c899b8aa94b83cbf1166422596, type: 3}
   effects:
   - {fileID: 11400000, guid: aad6b137976510c44bd3da3183ee421d, type: 2}

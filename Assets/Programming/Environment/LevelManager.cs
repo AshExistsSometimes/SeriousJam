@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.AI.Navigation;
 using System.Collections;
+using UnityEngine.UI;
 
 public class LevelManager : MonoBehaviour
 {
@@ -29,6 +30,16 @@ public class LevelManager : MonoBehaviour
      * - Red: boss
      * - White: normal rooms
      */
+
+    [Header("Level Progression")]
+    [SerializeField] private Transform player;
+    [SerializeField] private Image screenFadeImage;
+    [SerializeField] private float screenFadeDuration = 0.5f;
+
+    [Header("Loot Rooms")]
+    [SerializeField] private int lootRoomCap = 5;
+
+    private Transform currentLevelParent;
 
     [Header("NavMesh")]
     public NavMeshSurface navMeshSurface;
@@ -92,6 +103,97 @@ public class LevelManager : MonoBehaviour
         GenerateLayout();
     }
 
+    public void ProgressToNextLevel()
+    {
+        StartCoroutine(ProgressToNextLevelRoutine());
+    }
+
+    private IEnumerator ProgressToNextLevelRoutine()
+    {
+        // Increase level
+        GameManager.Instance.CurrentLevel++;
+        
+
+        // Enable fade image
+        screenFadeImage.gameObject.SetActive(true);
+
+        Color fadeColor = screenFadeImage.color;
+        fadeColor.a = 0f;
+        screenFadeImage.color = fadeColor;
+
+        // Fade to black
+        float timer = 0f;
+
+        while (timer < screenFadeDuration)
+        {
+            timer += Time.deltaTime;
+
+            fadeColor.a = Mathf.Lerp(
+                0f,
+                1f,
+                timer / screenFadeDuration);
+
+            screenFadeImage.color = fadeColor;
+
+            yield return null;
+        }
+
+        fadeColor.a = 1f;
+        screenFadeImage.color = fadeColor;
+
+        // Destroy previous level
+        if (currentLevelParent != null)
+            Destroy(currentLevelParent.gameObject);
+
+        roomGraph.Clear();
+        spawnedRooms.Clear();
+        mainPath.Clear();
+
+        // Move player back to start
+        if (player != null)
+        {
+            CharacterController cc =
+                player.GetComponent<CharacterController>();
+
+            if (cc != null)
+                cc.enabled = false;
+
+            player.position = new Vector3(0f, 1f, 0f);
+
+            if (cc != null)
+                cc.enabled = true;
+        }
+
+        // Generate new level
+        LoadLevel(GameManager.Instance.CurrentLevel);
+
+        yield return null;
+
+        // Fade back in
+        timer = 0f;
+
+        while (timer < screenFadeDuration)
+        {
+            timer += Time.deltaTime;
+
+            fadeColor.a = Mathf.Lerp(
+                1f,
+                0f,
+                timer / screenFadeDuration);
+
+            screenFadeImage.color = fadeColor;
+
+            yield return null;
+        }
+
+        fadeColor.a = 0f;
+        screenFadeImage.color = fadeColor;
+
+        screenFadeImage.gameObject.SetActive(false);
+
+        GameManager.Instance.NextLevelLogic();
+    }
+
     [ContextMenu("Generate Layout")]
     public void GenerateLayout()
     {
@@ -121,8 +223,7 @@ public class LevelManager : MonoBehaviour
         GenerateMainPath();
         GenerateBranches();
         GenerateReconnects();
-
-        
+        GenerateLootRooms();
     }
 
     // ---------------- MAIN PATH ----------------
@@ -312,16 +413,58 @@ public class LevelManager : MonoBehaviour
     {
         spawnedRooms.Clear();
 
+        currentLevelParent =
+            new GameObject(
+                $"Level - {GameManager.Instance.CurrentLevel}")
+            .transform;
+
         foreach (var node in roomGraph.Values)
         {
             Vector3 worldPos = GridToWorld(node.GridPosition);
 
             GameObject prefab = GetPrefab(node.RoomType);
 
-            GameObject roomObj = Instantiate(prefab, worldPos, Quaternion.identity);
+            GameObject roomObj =
+            Instantiate(
+                prefab,
+                worldPos,
+                Quaternion.identity,
+                currentLevelParent);
+
             roomObj.name = node.RoomType + " Room " + node.GridPosition;
 
             spawnedRooms[node.GridPosition] = roomObj;
+        }
+    }
+
+    private void GenerateLootRooms()
+    {
+        int lootCount =
+            Mathf.Min(
+                GameManager.Instance.CurrentLevel,
+                lootRoomCap);
+
+        List<RoomNode> validRooms =
+            new List<RoomNode>();
+
+        foreach (RoomNode room in roomGraph.Values)
+        {
+            if (room.RoomType == RoomType.Normal)
+                validRooms.Add(room);
+        }
+
+        for (int i = 0; i < lootCount; i++)
+        {
+            if (validRooms.Count == 0)
+                break;
+
+            int index =
+                Random.Range(0, validRooms.Count);
+
+            validRooms[index].RoomType =
+                RoomType.Loot;
+
+            validRooms.RemoveAt(index);
         }
     }
 
@@ -363,7 +506,11 @@ public class LevelManager : MonoBehaviour
 
         Debug.Log($"[WALL] Placing wall at {pos} dir {dir}");
 
-        Instantiate(DoorFillerPrefab, anchor.position, anchor.rotation);
+        Instantiate(
+            DoorFillerPrefab,
+            anchor.position,
+            anchor.rotation,
+            currentLevelParent);
     }
 
     private Transform GetDoorAnchor(Room room, Vector2Int dir)
@@ -431,6 +578,14 @@ public class LevelManager : MonoBehaviour
 
         GenerateWalls();
 
+        CameraManager camManager =
+        FindFirstObjectByType<CameraManager>();
+
+        if (camManager != null)
+        {
+            camManager.RefreshRooms();
+        }
+
         if (navMeshSurface != null)
         {
             navMeshSurface.BuildNavMesh();
@@ -438,7 +593,7 @@ public class LevelManager : MonoBehaviour
         else
         {
             Debug.LogWarning("[LevelManager] No NavMeshSurface assigned — skipping NavMesh bake.");
-        }
+        }    
     }
 
     public Vector3 GridToWorldPosition(Vector2Int pos)

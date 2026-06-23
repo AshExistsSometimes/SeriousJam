@@ -17,6 +17,9 @@ public class BulletSO : ScriptableObject
     public float speed = 20f;
     public float lifetime = 3f;
 
+    [Header("Audio")]
+    public AudioClip BulletSFX;
+
     [Header("Special Effects")]
     public List<BulletEffect> effects = new List<BulletEffect>();
 }

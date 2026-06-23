@@ -15,8 +15,9 @@ MonoBehaviour:
   bulletName: FlameBullet
   icon: {fileID: 21300000, guid: f7174f89b6fec0948b360bbf00ce0810, type: 3}
   bulletPrefab: {fileID: 5008046845060285744, guid: 7870fd8840c724b47ba88930a157af36, type: 3}
-  damage: 10
-  speed: 20
+  damage: 15
+  speed: 10
   lifetime: 6
+  BulletSFX: {fileID: 8300000, guid: 50b91d23f7d6a194c96f70a52fa9ef1d, type: 3}
   effects:
   - {fileID: 11400000, guid: 3c90cc84c135b264ba47b59a63a20437, type: 2}

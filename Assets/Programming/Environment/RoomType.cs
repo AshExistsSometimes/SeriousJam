@@ -6,6 +6,7 @@ public enum RoomType
 {
     Start,
     Normal,
+    Loot,
     Boss
 }
 

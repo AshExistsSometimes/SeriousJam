@@ -12,6 +12,13 @@ public class PlayerCombat : MonoBehaviour
     public PlayerModelSpin modelSpin;
     public PlayerMovement playerMovement;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [Space]
+    [SerializeField] private AudioClip GunshotSFX;// can be set by bullet later
+    private AudioClip DefaultGunshotAudio;
+    public Vector2 GunPitchVariation = new Vector2(0.95f, 1.05f);
+
     [Header("Aim")]
     public float aimPlaneHeight = 0f;
 
@@ -50,6 +57,8 @@ public class PlayerCombat : MonoBehaviour
     private void Start()
     {
         FillCylinderInstant();
+
+        DefaultGunshotAudio = GunshotSFX;
     }
 
     private void Update()
@@ -214,6 +223,18 @@ public class PlayerCombat : MonoBehaviour
             Quaternion.LookRotation(dir));
 
         obj.GetComponent<BulletProjectile>()?.Initialize(bullet, dir, bulletHitMask);
+
+        if (bullet.BulletSFX == null)
+        {
+            GunshotSFX = DefaultGunshotAudio;
+        }
+        else
+        {
+            GunshotSFX = bullet.BulletSFX;
+        }
+
+            audioSource.pitch = Random.Range(GunPitchVariation.x, GunPitchVariation.y);
+        audioSource.PlayOneShot(GunshotSFX);
     }
 
     // ?? GIZMOS ????????????????????????????????????????????????????????????????

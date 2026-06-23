@@ -43,8 +43,6 @@ public class BulletProjectile : MonoBehaviour
 
         Vector3 nextPos = transform.position + direction * data.speed * Time.deltaTime;
 
-        Debug.Log($"Dir:{direction} Speed:{data.speed}");
-
         if (rb != null)
         {
             rb.MovePosition(nextPos);
