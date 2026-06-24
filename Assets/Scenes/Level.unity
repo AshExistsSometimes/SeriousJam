@@ -781,7 +781,7 @@ MonoBehaviour:
   spinMusic: {fileID: 8300000, guid: d0bf31c4cbd33c043beca8654a7ad369, type: 3}
   tickSound: {fileID: 8300000, guid: 3eb1353b37aa0ac42bde97598d60802a, type: 3}
   normalWinSound: {fileID: 8300000, guid: 639fd8ffcb1297e46ae0fe2eac64ae60, type: 3}
-  jackpotWinSound: {fileID: 8300000, guid: 639fd8ffcb1297e46ae0fe2eac64ae60, type: 3}
+  jackpotWinSound: {fileID: 8300000, guid: aaf1e73dffdeecf4891d5960ba03d838, type: 3}
   rewardText: {fileID: 725442817}
   jackpotBanner: {fileID: 436111946}
   PressToSpinPopup: {fileID: 595046279}

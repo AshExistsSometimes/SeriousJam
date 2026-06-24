@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2228fb31c0138d4ab4f6f4882128608, type: 3}
   m_Name: SO_JackPotBullet
   m_EditorClassIdentifier: 
-  bulletName: Normal Bullet
+  bulletName: Jackpot Bullet
   icon: {fileID: 21300000, guid: 114d7470bc85da04385aaba2bdfcaa89, type: 3}
   bulletPrefab: {fileID: 5008046845060285744, guid: c77f95db80a06bc44a5a5b1f5c0f3616, type: 3}
   damage: 35

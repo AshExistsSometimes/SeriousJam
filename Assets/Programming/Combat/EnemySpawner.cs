@@ -110,7 +110,7 @@ public class EnemySpawner : MonoBehaviour
     private int RollEnemyCount(int level)
     {
         int min = MinimumEnemiesToSpawn;
-        int max = level * 2;
+        int max = Mathf.FloorToInt(level * 1.25f);
 
         List<int> pool = new();
         for (int i = min; i <= max; i++)

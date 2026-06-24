@@ -31,6 +31,8 @@ public class LevelManager : MonoBehaviour
      * - White: normal rooms
      */
 
+    public static System.Action OnLevelRegenerating;
+
     [Header("Level Progression")]
     [SerializeField] private Transform player;
     [SerializeField] private Image screenFadeImage;
@@ -140,6 +142,9 @@ public class LevelManager : MonoBehaviour
 
         fadeColor.a = 1f;
         screenFadeImage.color = fadeColor;
+
+        // Notify everything that the level is about to be regenerated
+        OnLevelRegenerating?.Invoke();
 
         // Destroy previous level
         if (currentLevelParent != null)
