@@ -4,6 +4,8 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : MonoBehaviour
 {
+    public bool MovementPaused;
+
     [Header("Movement")]
     public float moveSpeed = 6f;
     public float acceleration = 12f;
@@ -43,6 +45,10 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        if (MovementPaused)
+            return;
+
+
         if (isDashing)
             HandleDash();
         else

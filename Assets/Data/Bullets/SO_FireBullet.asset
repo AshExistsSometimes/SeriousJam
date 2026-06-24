@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2228fb31c0138d4ab4f6f4882128608, type: 3}
   m_Name: SO_FireBullet
   m_EditorClassIdentifier: 
-  bulletName: FlameBullet
+  bulletName: Fire Bullet
   icon: {fileID: 21300000, guid: f7174f89b6fec0948b360bbf00ce0810, type: 3}
   bulletPrefab: {fileID: 5008046845060285744, guid: 7870fd8840c724b47ba88930a157af36, type: 3}
   damage: 15

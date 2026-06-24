@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class PlayerCombat : MonoBehaviour
 {
+    public bool CombatPaused;
+
     [Header("References")]
     public Transform firePoint;
     public Transform aimMarker;
@@ -23,7 +25,7 @@ public class PlayerCombat : MonoBehaviour
     public float aimPlaneHeight = 0f;
 
     [Header("Ammo")]
-    public List<BulletSO> availableAmmo = new();
+    public List<BulletSO> AmmoPool = new();
     public List<BulletSO> currentAmmo = new();
     public int cylinderSize = 6;
 
@@ -63,6 +65,10 @@ public class PlayerCombat : MonoBehaviour
 
     private void Update()
     {
+        if (CombatPaused)
+            return;
+
+
         UpdateAim();
         HandleInput();
         fireCooldown -= Time.deltaTime;
@@ -178,7 +184,7 @@ public class PlayerCombat : MonoBehaviour
 
     private IEnumerator ReloadRoutine()
     {
-        if (availableAmmo.Count == 0) yield break;
+        if (AmmoPool.Count == 0) yield break;
 
         isReloading = true;
         currentAmmo.Clear();
@@ -188,7 +194,7 @@ public class PlayerCombat : MonoBehaviour
 
         for (int i = 0; i < cylinderSize; i++)
         {
-            BulletSO bullet = availableAmmo[Random.Range(0, availableAmmo.Count)];
+            BulletSO bullet = AmmoPool[Random.Range(0, AmmoPool.Count)];
             currentAmmo.Add(bullet);
 
             revolverUI.OnReloadStep(bullet, i);
@@ -202,11 +208,11 @@ public class PlayerCombat : MonoBehaviour
 
     private void FillCylinderInstant()
     {
-        if (availableAmmo.Count == 0) return;
+        if (AmmoPool.Count == 0) return;
 
         currentAmmo.Clear();
         for (int i = 0; i < cylinderSize; i++)
-            currentAmmo.Add(availableAmmo[Random.Range(0, availableAmmo.Count)]);
+            currentAmmo.Add(AmmoPool[Random.Range(0, AmmoPool.Count)]);
 
         revolverUI.SyncInstant(currentAmmo);
     }
@@ -234,7 +240,7 @@ public class PlayerCombat : MonoBehaviour
         }
 
             audioSource.pitch = Random.Range(GunPitchVariation.x, GunPitchVariation.y);
-        audioSource.PlayOneShot(GunshotSFX);
+            audioSource.PlayOneShot(GunshotSFX);
     }
 
     // ?? GIZMOS ????????????????????????????????????????????????????????????????
