@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -5,6 +6,7 @@ using UnityEngine.AI;
 public class BaseEnemy : MonoBehaviour, IDamageable
 {
     [Header("Stats")]
+    public string EnemyName = "Enemy";
     public float maxHP = 50f;
     public float currentHP;
     public float moveSpeed = 3f;
@@ -17,6 +19,7 @@ public class BaseEnemy : MonoBehaviour, IDamageable
     [Header("Knockback")]
     public float knockbackRecoverySpeed = 8f;
 
+    [Header("Audio")]
     public AudioSource audioSource;
     [Space]
     [SerializeField] private AudioClip HurtSFX;
@@ -25,6 +28,9 @@ public class BaseEnemy : MonoBehaviour, IDamageable
     public AudioClip AttackSFX;
     public Vector2 AttackPitchVariation = new Vector2(0.95f, 1.05f);
 
+    private readonly List<StatusEffectInstance> activeStatusEffects = new();
+    private float baseMoveSpeed;
+
     public bool TargetingPlayer { get; protected set; }
     protected Transform player;
     protected Vector3 lastKnownPlayerPos;
@@ -32,7 +38,7 @@ public class BaseEnemy : MonoBehaviour, IDamageable
     public bool DEBUGCanSeePlayer;
 
     private float lostSightTimer;
-    private bool isDead;
+    protected bool isDead;
     private Vector3 knockbackVelocity;
     private bool isKnockedBack;
 
@@ -41,6 +47,7 @@ public class BaseEnemy : MonoBehaviour, IDamageable
     protected virtual void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
+        baseMoveSpeed = moveSpeed;
         agent.speed = moveSpeed;
         agent.updateRotation = false;
         currentHP = maxHP;
@@ -57,6 +64,7 @@ public class BaseEnemy : MonoBehaviour, IDamageable
         if (isDead) return;
         HandleKnockback();
         UpdateSightline();
+        UpdateStatusEffects();
 
 #if UNITY_EDITOR
         DEBUGCanSeePlayer = TargetingPlayer;
@@ -171,11 +179,88 @@ public class BaseEnemy : MonoBehaviour, IDamageable
         Destroy(gameObject);
     }
 
+    // STATUS EFFECTS
+    private void UpdateStatusEffects()
+    {
+        for (int i = activeStatusEffects.Count - 1; i >= 0; i--)
+        {
+            if (!activeStatusEffects[i].Update(Time.deltaTime))
+                activeStatusEffects.RemoveAt(i);
+        }
+    }
+
+    public void ApplySlow(float amount, float duration)
+    {
+        float originalSpeed = agent.speed;
+        agent.speed = baseMoveSpeed * amount;
+
+        activeStatusEffects.Add(new StatusEffectInstance(
+            duration,
+            duration,
+            null,
+            () => agent.speed = baseMoveSpeed
+        ));
+    }
+
+    public void ApplyBurn(float damagePerTick, int ticks, float tickRate)
+    {
+        int remaining = ticks;
+
+        activeStatusEffects.Add(new StatusEffectInstance(
+            ticks * tickRate,
+            tickRate,
+            _ =>
+            {
+                if (remaining <= 0) return;
+                TakeDamage(damagePerTick);
+                remaining--;
+            }
+        ));
+    }
+
     // ?? GIZMOS ????????????????????????????????????????????????????????????????
 
     protected virtual void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, playerDetectionRange);
+    }
+}
+
+
+public class StatusEffectInstance
+{
+    public float duration;
+    public System.Action<float> tickAction;
+    public System.Action onEnd;
+    public float tickRate;
+    public float tickTimer;
+
+    public StatusEffectInstance(float duration, float tickRate, System.Action<float> tickAction, System.Action onEnd = null)
+    {
+        this.duration = duration;
+        this.tickRate = tickRate;
+        this.tickAction = tickAction;
+        this.onEnd = onEnd;
+    }
+
+    public bool Update(float dt)
+    {
+        duration -= dt;
+        tickTimer += dt;
+
+        if (tickTimer >= tickRate)
+        {
+            tickTimer = 0f;
+            tickAction?.Invoke(dt);
+        }
+
+        if (duration <= 0f)
+        {
+            onEnd?.Invoke();
+            return false;
+        }
+
+        return true;
     }
 }

@@ -11,12 +11,17 @@ public class GameManager : MonoBehaviour
 
     public TMP_Text levelText;
 
+    public static System.Action OnBossDefeated;
+
+    //
     private void Awake()
     {
         Instance = this;
 
         NextLevelLogic();
     }
+
+    //
 
     public void ResetLevelCounter()
     {
@@ -26,5 +31,10 @@ public class GameManager : MonoBehaviour
     public void NextLevelLogic()
     {
         levelText.text = ("Level " + CurrentLevel);
+    }
+
+    public void BossDefeated()
+    {
+        OnBossDefeated?.Invoke();
     }
 }

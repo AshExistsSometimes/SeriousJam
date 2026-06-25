@@ -13,12 +13,14 @@ public class BulletProjectile : MonoBehaviour
 
     private Rigidbody rb;
 
+    public bool originBullet = true;// prevents multi shot bullets from exploding PCs
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
     }
 
-    public void Initialize(BulletSO bulletData, Vector3 dir, LayerMask mask)
+    public void Initialize(BulletSO bulletData, Vector3 dir, LayerMask mask, bool isOriginBullet)
     {
         data = bulletData;
         direction = dir.normalized;
@@ -33,8 +35,12 @@ public class BulletProjectile : MonoBehaviour
             return;
         }
 
-        foreach (var effect in data.effects)
-            effect.OnSpawn(this);
+        if (isOriginBullet)
+        {
+            foreach (var effect in data.effects)
+                effect.OnSpawn(this);
+        }
+        
     }
 
     private void Update()
@@ -51,8 +57,6 @@ public class BulletProjectile : MonoBehaviour
         {
             transform.position = nextPos;
         }
-
-        Debug.Log($"Bullet Pos: {transform.position}");
 
         timer += Time.deltaTime;
         if (timer >= data.lifetime)
@@ -79,5 +83,16 @@ public class BulletProjectile : MonoBehaviour
         {
             Destroy(gameObject);
         }
+    }
+
+
+    public BulletSO GetBulletData()
+    {
+        return data;
+    }
+
+    public LayerMask GetHitMask()
+    {
+        return hitMask;
     }
 }

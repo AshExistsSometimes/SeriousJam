@@ -25,6 +25,8 @@ public class CameraManager : MonoBehaviour
 
     private Camera mainCam;
 
+    public static CameraManager Instance;
+
     private List<RoomFogOfWar> rooms =
         new List<RoomFogOfWar>();
 
@@ -34,6 +36,8 @@ public class CameraManager : MonoBehaviour
 
     private void Awake()
     {
+        Instance = this;
+
         mainCam = Camera.main;
 
         if (cameraFollow == null)

@@ -228,7 +228,7 @@ public class PlayerCombat : MonoBehaviour
             firePoint.position,
             Quaternion.LookRotation(dir));
 
-        obj.GetComponent<BulletProjectile>()?.Initialize(bullet, dir, bulletHitMask);
+        obj.GetComponent<BulletProjectile>()?.Initialize(bullet, dir, bulletHitMask, true);
 
         if (bullet.BulletSFX == null)
         {

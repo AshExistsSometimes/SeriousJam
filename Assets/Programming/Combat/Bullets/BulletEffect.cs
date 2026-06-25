@@ -7,7 +7,7 @@ using UnityEngine;
 public abstract class BulletEffect : ScriptableObject
 {
     /// <summary>
-    /// Called when bullet is spawned.
+    /// Called when bullet is spawned. (must be during instantiation)
     /// </summary>
     public virtual void OnSpawn(BulletProjectile projectile) { }
 

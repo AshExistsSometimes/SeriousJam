@@ -8,6 +8,9 @@ public class FreezeEffect : BulletEffect
 
     public override void OnHit(GameObject hit, Vector3 point, Vector3 direction)
     {
-        Debug.Log(hit.name + " is frozen");
+        BaseEnemy enemy = hit.GetComponent<BaseEnemy>();
+        if (enemy == null) return;
+
+        enemy.ApplySlow(slowAmount, duration);
     }
 }

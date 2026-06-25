@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class EnemyProjectile : MonoBehaviour
 {
@@ -9,13 +10,17 @@ public class EnemyProjectile : MonoBehaviour
     private float timer;
     private bool initialized;
 
-    public void Initialize(Vector3 dir, float spd, float dmg, float life)
+    private LayerMask hitMask;
+
+    public void Initialize(Vector3 dir, float spd, float dmg, float life, LayerMask mask)
     {
         direction = dir.normalized;
         speed = spd;
         damage = dmg;
         lifetime = life;
         initialized = true;
+
+        hitMask = mask;
     }
 
     private void Update()
@@ -45,8 +50,11 @@ public class EnemyProjectile : MonoBehaviour
             return;
         }
 
-        // Hit wall
-        if (other.CompareTag("Wall"))
+        // Check wall by layer instead of tag
+        if (((1 << other.gameObject.layer) & hitMask) != 0)
+        {
             Destroy(gameObject);
+            return;
+        }
     }
 }

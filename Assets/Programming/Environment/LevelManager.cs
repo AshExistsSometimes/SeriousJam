@@ -199,10 +199,11 @@ public class LevelManager : MonoBehaviour
         GameManager.Instance.NextLevelLogic();
     }
 
-    [ContextMenu("Generate Layout")]
+    [ContextMenu("Regenerate Layout")]
     public void GenerateLayout()
     {
-        LoadLevel(debugLevel);
+        GameManager.Instance.CurrentLevel--;
+        StartCoroutine(ProgressToNextLevelRoutine());
     }
 
     private void LoadLevel(int currentLevelNumber)

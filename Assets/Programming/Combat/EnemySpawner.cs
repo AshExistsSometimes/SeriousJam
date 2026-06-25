@@ -22,6 +22,10 @@ public class EnemySpawner : MonoBehaviour
     public float levelWeighting = 0.4f;
     public int MinimumEnemiesToSpawn = 2;
 
+
+    [Header("Boss Spawner")]
+    public bool BossSpawner;
+
     private bool hasTriggered;
     private bool isActive;
 
@@ -51,29 +55,24 @@ public class EnemySpawner : MonoBehaviour
 
         if (hasTriggered)
         {
-            Debug.Log($"[EnemySpawner] {gameObject.name} already triggered, ignoring.");
             return;
         }
 
         if (!other.CompareTag("Player"))
         {
-            Debug.Log($"[EnemySpawner] {gameObject.name} ignoring non-player collider: {other.gameObject.name}");
             return;
         }
 
-        Debug.Log($"[EnemySpawner] {gameObject.name} triggered by player — starting spawn coroutine.");
         hasTriggered = true;
         StartCoroutine(SpawnRoutine());
     }
 
     private IEnumerator SpawnRoutine()
     {
-        Debug.Log($"[EnemySpawner] {gameObject.name} waiting {spawnDelay}s before spawning...");
         yield return new WaitForSeconds(spawnDelay);
 
         if (potentialEnemies.Count == 0)
         {
-            Debug.LogWarning($"[EnemySpawner] {gameObject.name} has NO enemies in potentialEnemies list!");
             yield break;
         }
 
@@ -85,21 +84,32 @@ public class EnemySpawner : MonoBehaviour
         int level = GameManager.Instance != null ? GameManager.Instance.CurrentLevel : 1;
         int count = RollEnemyCount(level);
 
-        Debug.Log($"[EnemySpawner] {gameObject.name} rolling to spawn {count} enemies at level {level}.");
 
         int successCount = 0;
+        Bounds bounds = GetComponent<Collider>().bounds;
+        Vector3 roomCenter = bounds.center;
+
         for (int i = 0; i < count; i++)
         {
             if (!TryGetNavMeshPosition(out Vector3 spawnPos))
             {
-                Debug.LogWarning($"[EnemySpawner] {gameObject.name} spawn {i + 1}/{count} FAILED — no valid NavMesh position found within bounds using sample radius {spawnSampleRadius}. Is the NavMesh baked? Is the collider over the NavMesh?");
                 continue;
             }
 
             GameObject prefab = potentialEnemies[Random.Range(0, potentialEnemies.Count)];
-            Instantiate(prefab, spawnPos, Quaternion.identity);
+
+            Vector3 finalSpawnPos = BossSpawner ? roomCenter : spawnPos;
+
+            GameObject spawned = Instantiate(prefab, finalSpawnPos, Quaternion.identity);
+
+            BaseBoss boss = spawned.GetComponent<BaseBoss>();
+
+            if (boss != null)
+            {
+                boss.InitializeBoss(roomCenter);
+            }
+
             successCount++;
-            Debug.Log($"[EnemySpawner] {gameObject.name} spawned {prefab.name} at {spawnPos} ({i + 1}/{count})");
         }
 
         Debug.Log($"[EnemySpawner] {gameObject.name} done. {successCount}/{count} enemies spawned successfully.");
@@ -120,9 +130,20 @@ public class EnemySpawner : MonoBehaviour
         for (int i = 0; i < extraCopies; i++)
             pool.Add(level);
 
-        int result = pool[Random.Range(0, pool.Count)];
-        Debug.Log($"[EnemySpawner] RollEnemyCount: level={level}, range=[{min}-{max}], rolled={result}");
-        return result;
+
+        if (!BossSpawner)
+        {
+            int result = pool[Random.Range(0, pool.Count)];
+            Debug.Log($"[EnemySpawner] RollEnemyCount: level={level}, range=[{min}-{max}], rolled={result}");
+            return result;
+        }
+        else
+        {
+            int result = 1;
+
+            return result;
+        }    
+        
     }
 
     // ?? NAVMESH SAMPLING ??????????????????????????????????????????????????????
@@ -173,8 +194,15 @@ public class EnemySpawner : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = new Color(1f, 0.4f, 0f, 0.25f);
-        Collider col = GetComponent<Collider>();
+        if (!BossSpawner)
+        {
+            Gizmos.color = new Color(1f, 0.4f, 0f, 0.25f);
+        }
+        else
+        {
+            Gizmos.color = Color.red;
+        }
+            Collider col = GetComponent<Collider>();
         if (col != null)
             Gizmos.DrawCube(col.bounds.center, col.bounds.size);
         else
